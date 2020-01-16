@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>FewClick-TrainAndHost</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    .textbuttons {
+      text-align: center;
+    } 
+    .form-control{
+      font-family: 'roboto';
+      font-size: 22px;
+    }
+    .info{
+     float: center;
+    }
+    #out{
+     text-align: center; 
+      font-family: 'roboto';
+      font-size: 20px;
+    }
+    
+  </style>
+</head>
+<body>
+<div class="container mt-3">
+  <h2><i>FewClick-TrainAndHost</i> </h2>
+  <p><b>FewClick-TrainAndHost</b> is a platform to auto train a text classification model and later convert it to a flask based web-app in just few clicks.</p>
+  <form>
+    <div class="custom-file mb-3">
+      <input type="file" class="custom-file-input" id="customFile" name="filename">
+      <label class="custom-file-label" for="customFile">Choose file</label>
+    </div>
+    <div class="mt-3 textbuttons">
+      <button type="button" class="btn btn-primary" id="trainbtn">Train Model</button>
+    </div>
+  </form><br>
+
+  <div id="traininDiv">
+    <p><b>Console</b></p>
+    <div style="height: 500px; overflow: auto;">
+      <pre id="logs" style=" background-color: black;color: green;"></pre>
+    </div><br>
+  </div>
+  <div id="trainedAndSaved">
+      <p id=out>Your model has been <b><i>trained</i></b> and <b><i>saved</i></b> under models directory</p>
+  </div>
+  
+
+  <div id="info">
+   <form class="form-inline">
+      <input type="text" class="form-control mr-sm-2" placeholder="Enter WebApp Title" id="webAppTitle">
+      <button type="button" class="btn btn-primary" id="webappbtn">Create WebApp</button>
+   </form> 
+  </div>
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+      $("#info").hide();
+      $("#traininDiv").hide();
+      $("#trainedAndSaved").hide();
+     });  
+
+    $(".custom-file-input").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+
+    $('#trainbtn').click(function(){
+        $("#traininDiv").show();
+        var output = document.getElementById('logs');
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "{{ url_for('trainAndstream') }}");
+        xhr.send();
+
+        setInterval(function() {
+           output.textContent = xhr.responseText;
+        }, 1000);
+    });
+
+    function emojify(){
+      var input_txt = document.getElementById('comment').value
+      var URL = 'http://0.0.0.0:5000/emojify'
+      var dataString = "text="+input_txt;
+      
+      $.ajax({
+          type: 'POST',
+          url: URL,
+          data: dataString,
+          success: function(resp) {
+            if (resp.length===0){
+              document.getElementById('out').innerHTML = 'Not Found!'
+            }else{
+              document.getElementById('out').innerHTML = document.getElementById('comment').value + ' ' + resp;
+            }
+            
+          }
+      });
+    }
+  
+</script>
+  
+</body>
+</html>
