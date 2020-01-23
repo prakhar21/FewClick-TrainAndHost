@@ -18,6 +18,10 @@
     }
     .info{
      float: center;
+     text-align: center;
+    }
+    .loader{
+      left: 50%;
     }
     #out{
      text-align: center; 
@@ -29,7 +33,7 @@
 </head>
 <body>
 <div class="container mt-3">
-  <h2><i>FewClick-TrainAndHost</i> </h2>
+  <h2><i>FewClick-<font color="darkgreen;">TrainAndHost</font></i> </h2>
   <p><b>FewClick-TrainAndHost</b> is a platform to auto train a text classification model and later convert it to a flask based web-app in just few clicks.</p>
   <form>
     <div class="custom-file mb-3">
@@ -41,24 +45,38 @@
     </div>
   </form><br>
 
-  <div id="traininDiv">
-    <p><b>Console</b></p>
+  <div id="traininDiv" class="info">
+    <div class="spinner-border" style="color: green;"></div>
+    <p>Check your terminal for progress...</p>
+    <!-- <p><b>Console</b></p>
     <div style="height: 500px; overflow: auto;">
-      <pre id="logs" style=" background-color: black;color: green;"></pre>
+      <pre id="logs" style=" background-color: black;color: green;"></pre> -->
     </div><br>
-  </div>
+
   <div id="trainedAndSaved">
       <p id=out>Your model has been <b><i>trained</i></b> and <b><i>saved</i></b> under models directory</p>
   </div>
-  
 
-  <div id="info">
-   <form class="form-inline">
+  <form id="webappform">
+    <div class="custom-file mb-3">
       <input type="text" class="form-control mr-sm-2" placeholder="Enter WebApp Title" id="webAppTitle">
-      <button type="button" class="btn btn-primary" id="webappbtn">Create WebApp</button>
-   </form> 
-  </div>
+    </div>
+    <div class="mt-3 textbuttons">
+      <button type="button" class="btn btn-primary" id="webappbtn" onClick="createWebApp();">Create WebApp</button>
+    </div>
+  </form><br>
 
+  <div class="info" id="webapp">
+    <div class="spinner-border" style="color: green;"></div> 
+    <p>Please be patient. You app is being created...</p>
+  </div><br>
+
+  <div id="instructions">
+     <ol>
+      <li>Navigate to <b>my-app</b> folder</li>
+     </ol>
+  </div><br><br>
+  
 </div>
 
 <script type="text/javascript">
@@ -67,6 +85,9 @@
       $("#info").hide();
       $("#traininDiv").hide();
       $("#trainedAndSaved").hide();
+      $("#webappform").hide();
+      $("#webapp").hide();
+      $("#instructions").hide();
      });  
 
     $(".custom-file-input").on("change", function() {
@@ -76,31 +97,45 @@
 
     $('#trainbtn').click(function(){
         $("#traininDiv").show();
-        var output = document.getElementById('logs');
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', "{{ url_for('trainAndstream') }}");
-        xhr.send();
-
-        setInterval(function() {
-           output.textContent = xhr.responseText;
-        }, 1000);
+        call_trainer();
     });
 
-    function emojify(){
-      var input_txt = document.getElementById('comment').value
-      var URL = 'http://0.0.0.0:5000/emojify'
-      var dataString = "text="+input_txt;
-      
+    function createWebApp(){
+      $("#webapp").show();
+      document.getElementById('webapp').scrollIntoView();
+      title = document.getElementById('webAppTitle').value;
+      var URL = 'http://0.0.0.0:5000/createWebApp'  
+      var dataString = "text="+title;
       $.ajax({
           type: 'POST',
           url: URL,
           data: dataString,
           success: function(resp) {
-            if (resp.length===0){
-              document.getElementById('out').innerHTML = 'Not Found!'
-            }else{
-              document.getElementById('out').innerHTML = document.getElementById('comment').value + ' ' + resp;
+              document.getElementById('webapp').innerHTML = "<p>Your Web-App related relevant files have been created. Please follow the steps mentioned below to make it run. Thanks</p>"
+              $("#instructions").show();
+          }
+      });
+    }
+
+    function call_trainer(){
+      var formData = new FormData();
+      formData.append('filename', $('#customFile')[0].files[0]);
+      var URL = 'http://0.0.0.0:5000/trainAndstream'      
+      $.ajax({
+          type: 'POST',
+          url: URL,
+          processData: false,
+          contentType: false,
+          data: formData,
+          success: function(resp) {
+            console.log(resp);
+            if (resp==='1'){
+              document.getElementById('traininDiv').innerHTML = "<span style='font-size:20px;background-color: green;'>&#9989;</span>"
+              document.getElementById('out').innerHTML = "Your model has been <b><i>trained</i></b> and <b><i>saved</i></b> under models directory"
+              $("#trainedAndSaved").show();
+              $("#webappform").show();
+            }else if (resp==='0'){
+              document.getElementById('out').innerHTML = "Something went wrong."
             }
             
           }
