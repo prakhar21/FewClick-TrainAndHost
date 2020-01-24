@@ -67,7 +67,7 @@
   </form><br>
 
   <div class="info" id="webapp">
-    <div class="spinner-border" style="color: green;"></div> 
+    <div class="spinner-border"></div> 
     <p>Please be patient. You app is being created...</p>
   </div><br>
 
@@ -97,15 +97,17 @@
 
     $('#trainbtn').click(function(){
         $("#traininDiv").show();
-        call_trainer();
+$("#webappform").show();
+	//call_trainer();
     });
 
     function createWebApp(){
       $("#webapp").show();
       document.getElementById('webapp').scrollIntoView();
       title = document.getElementById('webAppTitle').value;
-      var URL = 'http://0.0.0.0:5000/createWebApp'  
+      var URL = 'http://0.0.0.0:5000/createWebApp'
       var dataString = "text="+title;
+      console.log(URL);
       $.ajax({
           type: 'POST',
           url: URL,
@@ -113,7 +115,8 @@
           success: function(resp) {
               document.getElementById('webapp').innerHTML = "<p>Your Web-App related relevant files have been created. Please follow the steps mentioned below to make it run. Thanks</p>"
               $("#instructions").show();
-          }
+          },
+	  error: function(err){console.log(err);}
       });
     }
 
@@ -130,7 +133,7 @@
           success: function(resp) {
             console.log(resp);
             if (resp==='1'){
-              document.getElementById('traininDiv').innerHTML = "<span style='font-size:20px;background-color: green;'>&#9989;</span>"
+              document.getElementById('traininDiv').innerHTML = "<span style='font-size:20px;'>&#9989;</span>"
               document.getElementById('out').innerHTML = "Your model has been <b><i>trained</i></b> and <b><i>saved</i></b> under models directory"
               $("#trainedAndSaved").show();
               $("#webappform").show();
